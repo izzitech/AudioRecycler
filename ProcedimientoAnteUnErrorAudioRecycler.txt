@@ -1,0 +1,13 @@
+Errores que podrían ocurrir:
+
+> El archivo no se encuentra... puede que haya fallado el registro de la base de datos o que se haya definido mal la ruta de ParametrosGlobales.xml
+- Se pasa de largo sin registrarlo.
+- Se guarda un registro en el log.
+
+> El archivo se encontró pero no se pudo registrar...
+- Se borra el archivo de destino.
+	- Y si no se puede borrar? Por ahora le puse un try-catch que no hace nada... 
+- Se guarda un registro en el log.
+
+> El archivo se enoctró, se copio pero no se puede borrar el archivo de origen.
+- Se graba un reporte en el log.
