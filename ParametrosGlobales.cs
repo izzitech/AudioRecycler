@@ -18,10 +18,11 @@ using System.Xml.Serialization;
 
 namespace AudioRecycler
 {
-    public class VariablesGlobales
+    public static class VariablesGlobales
     {
-        // Almacenamos la ruta del XML de ParametrosGlobales
-        public static string _rutaConParametrosGlobales = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location.ToString()) + @"\ParametrosGlobales.xml";
+        public static string configFolder = "AudioRecycler";
+        public static string configFile = "ParametrosGlobales.xml";
+        public static string configPath = Path.Combine(configFolder, configFile);
         public static string UNC_Origen;
         public static string UNC_Destino;
         public static int diasDeGracia;
@@ -84,10 +85,20 @@ namespace AudioRecycler
 
             while (!losDatosSonCorrectos) {
                 SolicitarDatos(ref parametrosGlobalesObjeto, datos, salt);
+                Console.Clear();
                 losDatosSonCorrectos = ConsultarDatos(parametrosGlobalesObjeto, datos);
             }
 
-            TextWriter xmlStream = new StreamWriter(VariablesGlobales._rutaConParametrosGlobales);
+            string folderConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), VariablesGlobales.configFolder);
+            string fullConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), VariablesGlobales.configPath);
+
+            if (!Directory.Exists(folderConfigPath))
+            {
+                Directory.CreateDirectory(folderConfigPath);
+                System.Diagnostics.Debug.WriteLine("Creado el directorio de datos de la aplicación.");
+            }
+
+            TextWriter xmlStream = new StreamWriter(fullConfigPath);
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(ParametrosGlobalesObjeto));
 
             xmlSerializer.Serialize(xmlStream, parametrosGlobalesObjeto);
@@ -217,11 +228,12 @@ namespace AudioRecycler
             NpgsqlConnection npgsqlConnection = new NpgsqlConnection();
             StreamReader streamReader;
 
-            if (File.Exists(VariablesGlobales._rutaConParametrosGlobales))
+            string fullConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), VariablesGlobales.configPath);
+            if (File.Exists(fullConfigPath))
             {
                 try
                 {
-                    streamReader = new StreamReader(VariablesGlobales._rutaConParametrosGlobales);
+                    streamReader = new StreamReader(fullConfigPath);
                     XmlSerializer xmlSerializer = new XmlSerializer(typeof(ParametrosGlobalesObjeto));
                     parametrosGlobalesObjeto = (ParametrosGlobalesObjeto)xmlSerializer.Deserialize(streamReader);
                     streamReader.Close();

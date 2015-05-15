@@ -41,12 +41,13 @@ namespace AudioRecycler {
         private static NpgsqlConnection CargarParametrosGlobales() {
             ParametrosGlobales parametrosGlobales = new ParametrosGlobales();
 
-            while (!File.Exists(VariablesGlobales._rutaConParametrosGlobales)) {
-                Console.WriteLine("Intentamos crear el archivo ParametrosGlobales.xml...");
+            string fullConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), VariablesGlobales.configPath);
+            while (!File.Exists(fullConfigPath)) {
+                Console.WriteLine("Creando ParametrosGlobales.xml...");
                 parametrosGlobales.CrearParametrosGlobalesPorConsola("añsldfn83892i");
             }
 
-            Console.WriteLine("Intentamos cargar el archivo ParametrosGlobales.xml...");
+            Console.WriteLine("Cargando ParametrosGlobales.xml...");
             return parametrosGlobales.LeerParametrosGlobales("añsldfn83892i");
         }
 
@@ -97,19 +98,20 @@ namespace AudioRecycler {
                 rutaOrigen = (string)dataTable.Rows[fila]["ruta"];
 
                 FileInfo archivoOrigen = new FileInfo(VariablesGlobales.UNC_Origen + rutaOrigen);
-                System.Diagnostics.Debug.WriteLine("Ruta de origen del audio: " + archivoOrigen.FullName);
+                System.Diagnostics.Debug.WriteLine("[INFO] Ruta de origen del audio: " + archivoOrigen.FullName);
 
                 FileInfo rutaDestino = new FileInfo(VariablesGlobales.UNC_Destino + rutaOrigen);
-                archivoDestino = rutaDestino.DirectoryName + "\\" + id.ToString() + rutaDestino.Extension;
-                System.Diagnostics.Debug.WriteLine("Ruta de destino del audio: " + archivoDestino);
+                archivoDestino = Path.Combine(rutaDestino.DirectoryName, id.ToString() + rutaDestino.Extension);
+                System.Diagnostics.Debug.WriteLine("[INFO] Ruta de destino del audio: " + archivoDestino);
 
                 if (!Directory.Exists(archivoOrigen.DirectoryName) || !File.Exists(archivoOrigen.FullName)){
-                    System.Diagnostics.Debug.WriteLine("El archivo no existe... salteando " + archivoOrigen.FullName);
+                    Console.WriteLine("[WARNING] El archivo no existe: " + archivoOrigen.FullName);
+                    System.Diagnostics.Debug.WriteLine("[WARNING] El archivo no existe: " + archivoOrigen.FullName);
                     continue;
                 }
 
                     if (!Directory.Exists(rutaDestino.DirectoryName)) {
-                        System.Diagnostics.Debug.WriteLine("La ruta de destino no existe, creando " + rutaDestino);
+                        System.Diagnostics.Debug.WriteLine("[INFO] La ruta de destino no existe, creando..." + rutaDestino);
                         Directory.CreateDirectory(rutaDestino.DirectoryName);
                     }
 
@@ -117,9 +119,8 @@ namespace AudioRecycler {
                 if (AudioArchivarEnDB(npgsqlConnection, id)){
                         File.Delete(archivoOrigen.FullName);
                     movidos += 1;
-                    Console.WriteLine();
-                    Console.WriteLine("Movido: " + archivoOrigen.FullName);
-                    Console.WriteLine("A:      " + archivoDestino);
+                    Console.WriteLine("[INFO] Ruta de origen del audio:  " + archivoOrigen.FullName);
+                    Console.WriteLine("[INFO] Ruta de destino del audio: " + archivoDestino);
                 }
             }
 
